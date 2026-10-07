@@ -78,7 +78,6 @@
                 containerOpen: false,
                 targetChosen: @js($selected_container !== 'default'),
                 selectedContainer: @entangle('selected_container').live,
-                containerOptions: @js($containerOptions),
                 init() {
                     const savedTheme = localStorage.getItem('coolify-console-theme');
                     this.consoleTheme = this.themeKeys.includes(savedTheme) ? savedTheme : 'system';
@@ -99,10 +98,6 @@
                     this.selectedContainer = value;
                     this.targetChosen = true;
                     this.containerOpen = false;
-                },
-                get selectedContainerLabel() {
-                    return this.containerOptions.find((option) => option.value === this.selectedContainer)?.label
-                        ?? 'Choose a container';
                 },
             }">
             <div data-terminal-session-canvas
@@ -141,8 +136,9 @@
                                     <button type="button"
                                         class="terminal-session-target-trigger flex h-8 max-w-[34rem] min-w-48 items-center gap-2 rounded-md px-2.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white"
                                         @click="containerOpen = !containerOpen">
-                                        <span class="min-w-0 flex-1 truncate text-left"
-                                            x-text="selectedContainerLabel"></span>
+                                        <span class="min-w-0 flex-1 truncate text-left">
+                                            {{ $containerOptions->firstWhere('value', $selected_container)['label'] ?? 'Choose a container' }}
+                                        </span>
                                         <svg class="size-2.5 shrink-0 text-white/35" viewBox="0 0 12 12"
                                             fill="none" aria-hidden="true">
                                             <path d="m3.5 4.75 2.5 2.5 2.5-2.5" stroke="currentColor"
@@ -151,12 +147,12 @@
                                     </button>
                                     <div x-cloak x-show="containerOpen" x-transition.origin.top.left
                                         class="terminal-target-picker terminal-target-list absolute top-11 left-0 z-50 max-h-72 w-80 overflow-y-auto rounded-lg border p-1 shadow-[var(--shadow-dropdown)]">
-                                        <template x-for="option in containerOptions" :key="option.value">
-                                            <button type="button"
+                                        @foreach ($containerOptions as $option)
+                                            <button type="button" wire:key="terminal-container-menu-{{ $option['value'] }}"
                                                 class="flex h-8 w-full items-center gap-2 rounded-md px-2 text-left text-[11px] text-white/65 transition-colors hover:bg-white/[0.07] hover:text-white"
-                                                @click="selectContainer(option.value)">
-                                                <span class="min-w-0 flex-1 truncate" x-text="option.label"></span>
-                                                <svg x-show="option.value === selectedContainer"
+                                                @click="selectContainer(@js($option['value']))">
+                                                <span class="min-w-0 flex-1 truncate">{{ $option['label'] }}</span>
+                                                <svg x-show="@js($option['value']) === selectedContainer"
                                                     class="size-3 shrink-0 text-[#fcd452]" viewBox="0 0 12 12"
                                                     fill="none" aria-hidden="true">
                                                     <path d="m2.5 6.25 2.1 2.1 4.9-5" stroke="currentColor"
@@ -164,7 +160,7 @@
                                                         stroke-linejoin="round" />
                                                 </svg>
                                             </button>
-                                        </template>
+                                        @endforeach
                                     </div>
                                 </div>
                             @endif
@@ -188,14 +184,14 @@
                                     </div>
                                 </div>
                                 <div class="max-h-64 overflow-y-auto">
-                                    <template x-for="option in containerOptions" :key="option.value">
-                                        <button type="button"
+                                    @foreach ($containerOptions as $option)
+                                        <button type="button" wire:key="terminal-container-launcher-{{ $option['value'] }}"
                                             class="flex h-9 w-full items-center gap-2 rounded-md px-2 text-left text-[11px] text-white/65 transition-colors hover:bg-white/[0.07] hover:text-white"
-                                            @click="selectContainer(option.value)">
+                                            @click="selectContainer(@js($option['value']))">
                                             <x-reicon name="layers" class="size-3.5 shrink-0 text-white/35" />
-                                            <span class="min-w-0 flex-1 truncate" x-text="option.label"></span>
+                                            <span class="min-w-0 flex-1 truncate">{{ $option['label'] }}</span>
                                         </button>
-                                    </template>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
