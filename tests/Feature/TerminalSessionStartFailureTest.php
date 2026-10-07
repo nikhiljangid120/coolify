@@ -260,12 +260,14 @@ describe('ExecuteContainerCommand', function () {
     });
 
     it('cancels the terminal auto-start when the user must choose a container', function () {
-        fakeTerminalContainer('running', runningContainers: ['app-container-a', 'app-container-b']);
+        fakeTerminalContainer('running', runningContainers: ['app-container-b', 'app-container-a']);
         $application = createTerminalApplication($this->server, $this->team);
         bindTerminalRouteParameters(['application_uuid' => $application->uuid]);
 
         Livewire::test(ExecuteContainerCommand::class)
             ->call('loadContainers')
+            ->assertSee("app-container-a · {$this->server->name}")
+            ->assertSee("app-container-b · {$this->server->name}")
             ->assertDispatchedTo(Terminal::class, Terminal::AUTO_START_CANCELLED_EVENT)
             ->assertNotDispatched('send-terminal-command');
     });
